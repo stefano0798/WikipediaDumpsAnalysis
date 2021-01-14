@@ -11,6 +11,8 @@ def contributor_details(contributor_tag):
         contributor['user_id'] = contributor_tag.id.text
     elif contributor_tag.ip is not None:
         contributor['ip'] = contributor_tag.ip.text
+    else:
+        contributor['ip'] = 'empty'
     return contributor
 
 def extract_fields_from_xml(dump_rmtext_file_path, wiki_fields_as_csv_file):
@@ -24,7 +26,7 @@ def extract_fields_from_xml(dump_rmtext_file_path, wiki_fields_as_csv_file):
     all_page_tags = stripped_soup.find_all('page')
     i = 0
     for page in all_page_tags:
-        if i%500 == 0:
+        if i%500 == 0 and len(all_page_tags) > 10:
             print(i, " pages parsed")
         i = i + 1
         page_id = page.find('id').text
@@ -41,11 +43,19 @@ def extract_fields_from_xml(dump_rmtext_file_path, wiki_fields_as_csv_file):
                 rev_rec[attr] = rev.find(attr).text
             #     print(rev.find('contributor'))
             contributor_det = contributor_details(rev.find('contributor'))
-            if 'user_id' in contributor_det.keys():
-                rev_rec['contributor_user_id'] = contributor_det['user_id']
-                rev_rec['contributor_username'] = contributor_det['username']
-            elif 'ip' in contributor_det.keys():
-                rev_rec['contributor_ip'] = contributor_det['ip']
+            if contributor_det is not None:
+                if 'user_id' in contributor_det.keys():
+                    rev_rec['contributor_user_id'] = contributor_det['user_id']
+                    rev_rec['contributor_username'] = contributor_det['username']
+                    rev_rec['contributor_ip'] = 'na'
+                elif 'ip' in contributor_det.keys():
+                    rev_rec['contributor_username'] = 'na'
+                    rev_rec['contributor_user_id'] = 'na'
+                    rev_rec['contributor_ip'] = contributor_det['ip']
+            else:
+                rev_rec['contributor_username'] = 'empty'
+                rev_rec['contributor_ip'] = 'empty'
+                rev_rec['contributor_user_id'] = 'empty'
             rev_rec['text_size'] = str(rev.find('text')['bytes'])
             rev_attr_list.append(rev_rec)
 

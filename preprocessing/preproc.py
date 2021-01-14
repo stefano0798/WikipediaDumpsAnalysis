@@ -67,3 +67,4 @@ if __name__ == "__main__":
         in_file_list = os.listdir(in_dir)[1:]
         for in_file in in_file_list:
             preprocess_file(os.path.join(in_dir, in_file))
+            print("preprocessing completed for" + in_file )
