@@ -2,6 +2,7 @@ import logging
 import os
 from preprocessing import strip_text_from_raw_dump, wiki_dump_to_dataframe
 import datetime
+import pandas
 
 # command to run:
 # python3 -m preprocessing.preproc <path_to_input_file> <path_to_output_dir> INFO
@@ -55,15 +56,30 @@ if __name__ == "__main__":
         logging.info("time taken for rmtext " + str(rmtext_endtime - start_time) )
 
         logging.info("extracting fields from xml dump to csv format")
-        dump_csv_file = os.path.join(out_dir, "wiki_fields_" + in_filename + ".csv")
-        wiki_dump_to_dataframe.extract_fields_from_xml(dump_rmtext_file, dump_csv_file)
-        logging.info("wiki fields csv saved at: " + dump_csv_file)
+
+        revisions_df = wiki_dump_to_dataframe.extract_fields_from_xml(dump_rmtext_file)
         to_dataframe_endtime = datetime.datetime.now()
-        logging.info("time taken for transforming to csv " + str(to_dataframe_endtime - rmtext_endtime) )
+        logging.info("time taken for transforming to csv " + str(to_dataframe_endtime - rmtext_endtime))
+        return revisions_df
 
     if input_mode == 'single_file':
-        preprocess_file(input_path)
+        in_filename = os.path.basename(input_path)
+        revisions_df = preprocess_file(input_path)
+        dump_csv_file = os.path.join(out_dir, "wiki_fields_" + in_filename + ".csv")
+        wiki_dump_to_dataframe.revisions_df_to_csv(revisions_df, dump_csv_file)
+        logging.info("wiki fields csv saved at: " + dump_csv_file)
+
     else:
         in_file_list = os.listdir(in_dir)[1:]
+        revisions_combine = pandas.DataFrame()
+        dir_name = os.path.basename(in_dir)
+        dump_csv_file = os.path.join(out_dir, "wiki_fields_" + dir_name + ".csv")
         for in_file in in_file_list:
-            preprocess_file(os.path.join(in_dir, in_file))
+            revisions_df = preprocess_file(os.path.join(in_dir, in_file))
+            print("revisions_df size: " + str(len(revisions_df)))
+            print("preprocessing completed for" + in_file )
+            revisions_combine = pandas.concat([revisions_combine, revisions_df])
+            print("revisions_combine size: " + str(len(revisions_combine)))
+        wiki_dump_to_dataframe.revisions_df_to_csv(revisions_combine, dump_csv_file)
+        logging.info("wiki fields csv saved at: " + dump_csv_file)
+
