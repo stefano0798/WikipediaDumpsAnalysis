@@ -7,7 +7,7 @@ from pyspark.sql import Window
 sc = SparkContext.getOrCreate()
 sc.setLogLevel("ERROR")
 
-df = spark.read.csv("/user/s2575760/project/data/sample/preprocesed/wiki_fields_enwiki-20201201-pages-meta-history2.xml-p151386p151573.csv", header="true")
+df = spark.read.csv("/user/s2575760/project/data/enwiki-202012010-pages-meta-history/", header="true")
 
 data = df.select(df.page_id, df.rev_id, df.timestamp)
 
@@ -26,29 +26,46 @@ data = df.select(df.page_id, df.rev_id, df.timestamp)
 dataset = data.select(data.page_id, data.rev_id, to_timestamp(data.timestamp).alias('timestamp'))
 
 # add current timestamp to compare time difference
-dataset_with_scores = dataset.withColumn("current_timestamp", lit(functions.current_timestamp()))
+# WARNING: with "actual timestamp we consider to be on >>> December 2nd, 2020 <<< since the last dump is dated December 1st, 2020
+
+actual_timestamp = "2020-12-02 12:00:00"
+
+
+# dataset_with_scores = dataset.withColumn("current_timestamp", lit(functions.current_timestamp()))
+
+dataset_with_scores = dataset.withColumn("current_timestamp", lit(actual_timestamp))
+
 # initialize score column to 0
 dataset_with_scores = dataset_with_scores.withColumn("score", lit(0))
 
 # transform timestamps to integer in order to retrieve difference (in seconds)
 dataset_with_scores = dataset_with_scores.select(dataset_with_scores.page_id, dataset_with_scores.rev_id, functions.unix_timestamp(dataset_with_scores.timestamp).alias("timestamp"), functions.unix_timestamp(dataset_with_scores.current_timestamp).alias("current_timestamp"), dataset_with_scores.score)
-dataset_with_scores
+# dataset_with_scores
 # dataset_with_scores.show()
+
+# here 38'801'048 records, BUT  
+# dirty data, let's remove edits before creation of Wikipedia and after the date of the dump
+
+creation_of_wikipedia = 979516800 # January 15th, 2001
+latest_dump_date = 1606953599 # December 2nd, 2020
+dataset_with_scores = dataset_with_scores.filter( (dataset_with_scores.timestamp >= creation_of_wikipedia) & (dataset_with_scores.timestamp <= latest_dump_date) )
+
+# now there are 36'015'250 records
 
 # convert seconds to seconds (integer format)
 dataset_with_scores = dataset_with_scores.select(dataset_with_scores.page_id, dataset_with_scores.rev_id, functions.round(dataset_with_scores.timestamp).cast('integer').alias("timestamp"), functions.round(dataset_with_scores.current_timestamp).cast('integer').alias("current_timestamp"), dataset_with_scores.score)
-dataset_with_scores
+# dataset_with_scores
 # dataset_with_scores.show()
 
 # calculate score using these values...
 high_score = 3 # points gained for recent edits ( < recent_limit ) (default: 3)
 low_score = 1 # points gained for older edits ( between recent_limit and old_limit) (default: 1)
-recent_limit = 1104541200 # number of seconds before an edit is considered new (default: 604800, one week)
-old_limit = 1167613200 # number of seconds before an edit is still considerable (default: 2419200, one month)
+recent_limit = 2419200 # number of seconds before an edit is considered new (default: 2419200, one month)
+old_limit = 7257600 # number of seconds before an edit is still considerable (default: 7257600, three months)
 # very important that recent_limit < old_limit 
 # in this way, an edit gains three points if it is more recent than one week, while it gains one point if it is between one week and one month old. No points gained for ones older than one month
 dataset_with_scores = dataset_with_scores.select(dataset_with_scores.page_id, dataset_with_scores.rev_id, dataset_with_scores.timestamp, dataset_with_scores.current_timestamp, functions.when(dataset_with_scores.current_timestamp - dataset_with_scores.timestamp <= recent_limit, high_score).when( ((dataset_with_scores.current_timestamp - dataset_with_scores.timestamp <= old_limit) & (dataset_with_scores.current_timestamp - dataset_with_scores.timestamp > recent_limit)), low_score).otherwise(0).alias("score"))
-dataset_with_scores
+# dataset_with_scores
 # dataset_with_scores.show()
 
 #rename for shorter typing...
@@ -78,7 +95,7 @@ dataset = dataset.select('page_id', 'rev_id', 'timestamp', 'score', 'review_numb
 dataset = dataset.groupBy("page_id", "first_edit", "recent_reviews", "review_number").sum("score").withColumnRenamed("sum(score)", "score")
 # dataset.show()
 
-dataset = dataset.withColumn("current_timestamp", functions.unix_timestamp(lit(functions.current_timestamp())))
+dataset = dataset.withColumn("current_timestamp", functions.unix_timestamp(lit(actual_timestamp)))
 dataset = dataset.withColumn("edit_per_day", (dataset.review_number / (((dataset.current_timestamp - dataset.first_edit)/(86400)))))
 # dataset.show()
 dataset = dataset.drop(dataset.current_timestamp)
