@@ -111,4 +111,21 @@ dataset = dataset.withColumn("recent_reviews", (dataset.recent_reviews/dataset.r
 dataset = dataset.drop(dataset.first_edit)
 dataset = dataset.drop(dataset.review_number)
 
-dataset.show()
+# dataset.show()
+
+top_edits_per_day = dataset.select(dataset.page_id, dataset.edit_per_day)
+
+top_score = dataset.select(dataset.page_id, dataset.score)
+
+id_and_titles = df.select(df.page_id, df.page_title).withColumnRenamed("page_id", "new_page_id").distinct()
+
+top_edits_per_day = top_edits_per_day.join(id_and_titles, top_edits_per_day.page_id == id_and_titles.new_page_id, how = "inner")
+
+top_edits_per_day = top_edits_per_day.drop(top_edits_per_day.new_page_id)
+
+top_score = top_score.join(id_and_titles, top_score.page_id == id_and_titles.new_page_id, how = "inner")
+
+top_score = top_score.drop(top_score.new_page_id)
+
+top_edits_per_day.orderBy(top_edits_per_day.edit_per_day, ascending=False).show(10, False)
+top_score.orderBy(top_score.score, ascending=False).show(10, False)
