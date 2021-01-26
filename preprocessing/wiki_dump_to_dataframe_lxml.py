@@ -4,8 +4,6 @@ import pandas
 import numpy as np
 from lxml import etree
 
-
-
 ns = {'wiki_ns' : 'http://www.mediawiki.org/xml/export-0.10/'}
 
 def contributor_details(contributor_tag):
@@ -19,11 +17,8 @@ def contributor_details(contributor_tag):
         contributor['ip'] = 'empty'
     return contributor
 
-def extract_fields_from_xml_lxml(dump_rmtext_file_path):
+def extract_fields_from_xml(dump_rmtext_data):
     ns = {'wiki_ns': 'http://www.mediawiki.org/xml/export-0.10/'}
-
-    with open(dump_rmtext_file_path) as dump_rmtext_file:
-        dump_rmtext_data = dump_rmtext_file.read()
     rmtext_parsed = etree.fromstring(dump_rmtext_data)
 
     revisions_df = pandas.DataFrame()
@@ -47,7 +42,6 @@ def extract_fields_from_xml_lxml(dump_rmtext_file_path):
             rev_attributes = ['id', 'timestamp', 'model', 'format', 'sha1']
             for attr in rev_attributes:
                 rev_rec[attr] = rev.find('wiki_ns:' + attr, ns).text
-            #     print(rev.find('contributor'))
             parent_id = rev.find('wiki_ns:parentid', ns)
             if parent_id is None:
                 rev_rec['parent_revid'] = 'na'
@@ -93,5 +87,7 @@ if __name__ == "__main__":
         logging.error("usage: wiki_dump_to_dataframe.py <IN_FILE> <OUT_FILE>")
     in_file = sys.argv[1]
     out_file = sys.argv[2]
-    revisions = extract_fields_from_xml_lxml(in_file)
+    with open(in_file) as dump_rmtext_file:
+        dump_rmtext_data = dump_rmtext_file.read()
+    revisions = extract_fields_from_xml(dump_rmtext_data)
     revisions_df_to_csv(revisions, out_file)

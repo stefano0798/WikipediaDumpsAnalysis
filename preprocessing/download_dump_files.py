@@ -1,16 +1,19 @@
 import os
 import subprocess
 import sys
+import logging
 
 def download_files(url_list, dest_dir):
     os.chdir(dest_dir)
     for url in url_list:
         filename = os.path.basename(url)
         if filename not in os.listdir(dest_dir):
-            print('downloading', filename)
+            logging.info('downloading' + filename)
             data = subprocess.Popen(['wget', url], stdout=subprocess.PIPE)
             output = data.communicate()
-            print(output)
+            logging.info(output)
+        else:
+            logging.info('skipping ' + filename + ' already present!')
 
 def read_url_list(url_list_file):
     with open(url_list_file, 'r') as read_file:
