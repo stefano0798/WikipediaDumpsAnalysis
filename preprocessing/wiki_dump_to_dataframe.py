@@ -17,14 +17,16 @@ def contributor_details(contributor_tag):
     return contributor
 
 def extract_fields_from_xml_lxml(dump_rmtext_file_path):
+    ns = {'wiki_ns': 'http://www.mediawiki.org/xml/export-0.10/'}
+
     with open(dump_rmtext_file_path) as dump_rmtext_file:
         dump_rmtext_data = dump_rmtext_file.read()
-    stripped_soup = BeautifulSoup(dump_rmtext_data, 'xml')
+    stripped_etree = etree.fromstring(dump_rmtext_data)
 
     revisions_df = pandas.DataFrame()
     revisions_count = []
 
-    all_page_tags = stripped_soup.find_all('page')
+    all_page_tags = stripped_etree.findall('wiki_ns:page', ns)
     i = 0
     for page in all_page_tags:
         if i%500 == 0 and len(all_page_tags) > 10:
