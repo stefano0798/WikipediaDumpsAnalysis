@@ -1,3 +1,6 @@
+# time spark-submit --master yarn --deploy-mode cluster --conf spark.dynamicAllocation.maxExecutors=10 tweet_selection.py
+# scp <src_host>:<src_file> <dest_host>:<dest_file>
+
 from pyspark import SparkContext
 from pyspark.sql.functions import to_timestamp
 from pyspark.sql.functions import lit
@@ -30,7 +33,6 @@ dataset = data.select(data.page_id, data.rev_id, to_timestamp(data.timestamp).al
 
 actual_timestamp = "2020-12-02 12:00:00"
 
-
 # dataset_with_scores = dataset.withColumn("current_timestamp", lit(functions.current_timestamp()))
 
 dataset_with_scores = dataset.withColumn("current_timestamp", lit(actual_timestamp))
@@ -43,14 +45,14 @@ dataset_with_scores = dataset_with_scores.select(dataset_with_scores.page_id, da
 # dataset_with_scores
 # dataset_with_scores.show()
 
-# here 38'801'048 records, BUT  
+# here 315'878'502 records, BUT  
 # dirty data, let's remove edits before creation of Wikipedia and after the date of the dump
 
 creation_of_wikipedia = 979516800 # January 15th, 2001
 latest_dump_date = 1606953599 # December 2nd, 2020
 dataset_with_scores = dataset_with_scores.filter( (dataset_with_scores.timestamp >= creation_of_wikipedia) & (dataset_with_scores.timestamp <= latest_dump_date) )
 
-# now there are 36'015'250 records
+# now there are 310'558'623 records
 
 # convert seconds to seconds (integer format)
 dataset_with_scores = dataset_with_scores.select(dataset_with_scores.page_id, dataset_with_scores.rev_id, functions.round(dataset_with_scores.timestamp).cast('integer').alias("timestamp"), functions.round(dataset_with_scores.current_timestamp).cast('integer').alias("current_timestamp"), dataset_with_scores.score)
@@ -117,7 +119,7 @@ top_edits_per_day = dataset.select(dataset.page_id, dataset.edit_per_day)
 
 top_score = dataset.select(dataset.page_id, dataset.score)
 
-id_and_titles = df.select(df.page_id, df.page_title).withColumnRenamed("page_id", "new_page_id").distinct()
+id_and_titles = df.select(df.page_id, df.page_title).withColumnRenamed("page_id", "new_page_id").dropDuplicates(["page_id"])
 
 top_edits_per_day = top_edits_per_day.join(id_and_titles, top_edits_per_day.page_id == id_and_titles.new_page_id, how = "inner")
 
