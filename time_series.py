@@ -1,4 +1,4 @@
-# Time series page_revisions per month in 2020
+# Time series page_revisions per month in 2019
 
 from pyspark import SparkContext
 from datetime import datetime
@@ -22,7 +22,7 @@ df = spark.read.csv(PATH,header="true")
 
 df0 = df.select("page_id", "page_title", "page_ns", "rev_id", "parent_revid", "model", "format", "text_size", "sha1", "contributor_ip", "contributor_user_id", "contributor_username", to_timestamp(df.timestamp, 'yyyy-MM-dd').alias('date'))
 
-df1 = df0.filter((df0.date >= '2018-01-01') & (df0.date <= '2019-12-31'))
+df1 = df0.filter((df0.date >= '2019-01-01') & (df0.date <= '2019-12-31'))
 df2 = df1.select("page_id", "page_title", "rev_id", "date", "text_size").groupBy("page_id", "page_title", month("date").alias("month")).agg(count("rev_id").alias("count_revisions")).sort(desc('count_revisions'))
 
 #Result Example
