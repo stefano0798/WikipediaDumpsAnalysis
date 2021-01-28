@@ -31,14 +31,14 @@ df1 = df0.filter((df0.date >= '2000-01-01') & (df0.date <= '2019-12-31'))
 df2 = df1.groupBy("page_id", "page_title",  "rev_id", "text_size", dayofyear("date").alias("day"), month("date").alias("month"), year("date").alias("year")).agg(count("rev_id").alias("count_revisions")).sort(desc("count_revisions"))
 
 df2.createOrReplaceTempView("wiki_data")
-df3 = spark.sql("select page_title, page_id, sum(count_revisions) as count_revisions from wiki_data where page_title not like 'Wikipedia%' group by 1, 2 order by count_revisions desc limit 100")
+df3 = spark.sql("select page_title, page_id, sum(count_revisions) as count_revisions from wiki_data where page_title not like 'Wikipedia%' group by 1, 2 order by count_revisions desc limit 20")
 
 df4 = df2.join(df3, df2.page_id == df3.page_id, "leftsemi")
 df5 = df4.groupBy("page_id", "page_title", "month", "year").agg(sql_sum(df4.count_revisions).alias("count_revisions"), sql_sum(df4.text_size).alias("text_size"))
 
-series_2000_2019 = df5.filter((df5.year >= '2000') & (df5.year <= '2019'))
-series_2000_2009 = df5.filter((df5.year >= '2000') & (df5.year <= '2009'))
-series_2010_2019 = df5.filter((df5.year >= '2010') & (df5.year <= '2019'))
+s_2000_2019 = df5.filter((df5.year >= '2000') & (df5.year <= '2019'))
+s_2000_2009 = df5.filter((df5.year >= '2000') & (df5.year <= '2009'))
+s_2010_2019 = df5.filter((df5.year >= '2010') & (df5.year <= '2019'))
 #series_2000_2009 = spark.sql("select page_title, page_id, month, year, sum(wiki_data.count_revisions) as count_revisions from wiki_data join top_100 using (page_id) where year >= 2000 and year <= 2009 group 1,2,3,4 order by 5 desc")
 #series_2010_2019 = spark.sql("select page_title, page_id, month, year, sum(wiki_data.count_revisions) as count_revisions from wiki_data join top_100 using (page_id) where year >= 2010 and year <= 2019 group 1,2,3,4 order by 5 desc")
 
@@ -48,11 +48,14 @@ series_2010_2019 = df5.filter((df5.year >= '2010') & (df5.year <= '2019'))
 #print(series_2000_2009.count())
 #print(series_2010_2019.count())
 
-series_2000_2019 = series_2000_2019.coalesce(1)
-series_2000_2009 = series_2000_2009.coalesce(1)
-series_2010_2019 = series_2010_2019.coalesce(1)
+series_2000_2019 = s_2000_2019.coalesce(1)
+series_2000_2009 = s_2000_2009.coalesce(1)
+series_2010_2019 = s_2010_2019.coalesce(1)
+
+#print(series_2000_2019.count())
+#print(series_2000_2009.count())
+#print(series_2010_2019.count())
 
 series_2000_2019.write.format('csv').mode("overwrite").option("header","true").save('/user/s2475650/series_2000_2019.csv')
 series_2000_2009.write.format('csv').mode("overwrite").option("header","true").save('/user/s2475650/series_2000_2019.csv')
 series_2010_2019.write.format('csv').mode("overwrite").option("header","true").save('/user/s2475650/series_2000_2019.csv')
-
