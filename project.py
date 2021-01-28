@@ -1,16 +1,20 @@
-# time spark-submit --master yarn --deploy-mode cluster --conf spark.dynamicAllocation.maxExecutors=10 tweet_selection.py
-# scp <src_host>:<src_file> <dest_host>:<dest_file>
+# scp project.py s2640171@ctit012.ewi.utwente.nl:/home/s2640171/project/project.py
+# time spark-submit --master yarn --deploy-mode cluster --conf spark.dynamicAllocation.maxExecutors=10 project.py
 
 from pyspark import SparkContext
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 from pyspark.sql.functions import lit
 from pyspark.sql import functions
 from pyspark.sql import Window
 
+spark = SparkSession.builder.getOrCreate()
 sc = SparkContext.getOrCreate()
 sc.setLogLevel("ERROR")
 
-df = spark.read.csv("/user/s2575760/project/data/enwiki-202012010-pages-meta-history/", header="true")
+# df = spark.read.csv("/user/s2575760/project/data/enwiki-202012010-pages-meta-history/", header="true")
+df = spark.read.csv("/user/s2575760/project/data/enwiki-202012010-pages-meta-history/enwiki-20201201-pages-meta-history1.xml-p14736p15415_wikifields.csv", header="true")
+
 
 data = df.select(df.page_id, df.rev_id, df.timestamp)
 
@@ -29,7 +33,7 @@ data = df.select(df.page_id, df.rev_id, df.timestamp)
 dataset = data.select(data.page_id, data.rev_id, to_timestamp(data.timestamp).alias('timestamp'))
 
 # add current timestamp to compare time difference
-# WARNING: with "actual timestamp we consider to be on >>> December 2nd, 2020 <<< since the last dump is dated December 1st, 2020
+# WARNING: with "actual timestamp" we consider to be on >>> December 2nd, 2020 <<< since the last dump is dated December 1st, 2020
 
 actual_timestamp = "2020-12-02 12:00:00"
 
@@ -119,7 +123,7 @@ top_edits_per_day = dataset.select(dataset.page_id, dataset.edit_per_day)
 
 top_score = dataset.select(dataset.page_id, dataset.score)
 
-id_and_titles = df.select(df.page_id, df.page_title).withColumnRenamed("page_id", "new_page_id").dropDuplicates(["page_id"])
+id_and_titles = df.select(df.page_id, df.page_title).withColumnRenamed("page_id", "new_page_id").dropDuplicates(["new_page_id"])
 
 top_edits_per_day = top_edits_per_day.join(id_and_titles, top_edits_per_day.page_id == id_and_titles.new_page_id, how = "inner")
 
