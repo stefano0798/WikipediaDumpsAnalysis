@@ -1,4 +1,7 @@
 # example of question3 highlight various topics that gained popularity over the years
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 from pyspark import SparkContext
 from datetime import datetime
 from pyspark.sql import SparkSession
