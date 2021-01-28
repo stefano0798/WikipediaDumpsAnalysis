@@ -3,6 +3,9 @@ import logging
 import pandas
 import numpy as np
 from lxml import etree
+import xml.etree.ElementTree as ET
+
+import datetime
 
 ns = {'wiki_ns' : 'http://www.mediawiki.org/xml/export-0.10/'}
 
@@ -19,7 +22,16 @@ def contributor_details(contributor_tag):
 
 def extract_fields_from_xml(dump_rmtext_data):
     ns = {'wiki_ns': 'http://www.mediawiki.org/xml/export-0.10/'}
-    rmtext_parsed = etree.fromstring(dump_rmtext_data)
+
+    logging.info(datetime.datetime.now().isoformat())
+    logging.info("in extract_fields - starting etree fromstring")
+
+    etree_start = datetime.datetime.now()
+    rmtext_parsed = ET.fromstring(dump_rmtext_data)
+    etree_done = datetime.datetime.now()
+    logging.info(datetime.datetime.now().isoformat())
+    logging.info("in extract_fields - etree fromstring done")
+    logging.info("time taken: " + str((etree_done-etree_start).total_seconds()))
 
     revisions_df = pandas.DataFrame()
     revisions_count = []
@@ -28,7 +40,9 @@ def extract_fields_from_xml(dump_rmtext_data):
     i = 0
     for page in all_page_tags:
         if i % 500 == 0 and len(all_page_tags) > 10:
+            cur_time = datetime.datetime.now()
             print(i, " pages parsed")
+            logging.info(cur_time.isoformat() + "   " + str(i) + " pages parsed")
         i = i + 1
         page_id = page.find('wiki_ns:id', ns).text
         page_title = page.find('wiki_ns:title', ns).text

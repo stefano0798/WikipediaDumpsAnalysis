@@ -4,8 +4,8 @@ import datetime
 import os
 import logging
 from preprocessing import download_dump_files
-from preprocessing import strip_text_and_extract_fields
-from preprocessing import wiki_dump_to_dataframe_lxml
+from preprocessing import strip_text_and_extract_fields_pagelevel
+# from preprocessing import wiki_dump_to_dataframe_lxml
 
 # 1. download compressed file
 # 2. uncompress
@@ -88,11 +88,9 @@ if __name__ == '__main__':
         unzip_file(os.path.join(DOWNLOAD_FILES_LOCATION, filename), FILES_UNCOMPRESS_LOCATION)
         logging.info(str(get_elapsed_time(start_time)) + 's - unzipped ' + filename)
         filename = filename[:-3]
-        logging.info(str(get_elapsed_time(start_time)) + 's - init rmtext ' + filename)
-        rmtext_str = strip_text_and_extract_fields.strip_text(os.path.join(FILES_UNCOMPRESS_LOCATION, filename))
-        logging.info(str(get_elapsed_time(start_time)) + 's - completed rmtext ' + filename)
+        logging.info(str(get_elapsed_time(start_time)) + 's - init transform to df ' + filename)
+        rev_df = strip_text_and_extract_fields_pagelevel.strip_text_get_df(os.path.join(FILES_UNCOMPRESS_LOCATION, filename))
+        logging.info(str(get_elapsed_time(start_time)) + 's - completed transform to df ' + filename)
         # delete_unzipped_file(filename)
-        logging.info(str(get_elapsed_time(start_time)) + 's - init wiki_fields_csv ' + filename)
-        rev_df = wiki_dump_to_dataframe_lxml.extract_fields_from_xml(rmtext_str)
-        wiki_dump_to_dataframe_lxml.revisions_df_to_csv(rev_df, os.path.join(FILES_CSV_LOCATION, filename + "_l_wikifields.csv"))
+        strip_text_and_extract_fields_pagelevel.revisions_df_to_csv(rev_df, os.path.join(FILES_CSV_LOCATION, filename + "_d_wikifields.csv"))
         logging.info(str(get_elapsed_time(start_time)) + 's - completed wiki_fields_csv ' + filename)
