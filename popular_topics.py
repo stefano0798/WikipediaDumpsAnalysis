@@ -6,6 +6,9 @@ from pyspark.sql.types import DateType
 from datetime import timedelta
 from pyspark.sql.functions import col, udf,desc
 from pyspark.sql.functions import to_timestamp
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 spark = SparkSession.builder.getOrCreate()
 
