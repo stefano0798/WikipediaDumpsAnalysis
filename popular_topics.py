@@ -12,7 +12,7 @@ from pyspark.sql.functions import to_timestamp
 
 spark = SparkSession.builder.getOrCreate()
 
-PATH ="/user/s2575760/project/data/sample/preprocesed/wiki_fields_enwiki-20201201-pages-meta-history2.xml-p151386p151573.csv"
+PATH ="ser/s2575760/project/data/enwiki-202012010-pages-meta-history"
 df = spark.read.csv(PATH,header="true")
 
 df1 = df.select('page_id','page_title',to_timestamp(df.timestamp, 'yyyy-MM-dd').alias('date'))
