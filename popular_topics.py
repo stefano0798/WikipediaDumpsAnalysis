@@ -1,7 +1,4 @@
 # example of question3 highlight various topics that gained popularity over the years
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 from pyspark import SparkContext
 from datetime import datetime
 from pyspark.sql import SparkSession
@@ -12,7 +9,7 @@ from pyspark.sql.functions import to_timestamp
 
 spark = SparkSession.builder.getOrCreate()
 
-PATH ="ser/s2575760/project/data/enwiki-202012010-pages-meta-history"
+PATH ="/user/s2575760/project/data/enwiki-202012010-pages-meta-history/*"
 df = spark.read.csv(PATH,header="true")
 
 df1 = df.select('page_id','page_title',to_timestamp(df.timestamp, 'yyyy-MM-dd').alias('date'))
@@ -20,6 +17,27 @@ df1 = df.select('page_id','page_title',to_timestamp(df.timestamp, 'yyyy-MM-dd').
 #set start_time
 time_2002 = datetime(2002, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
 
+time_2003 = datetime(2003, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2004 = datetime(2004, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2005 = datetime(2005, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2006 = datetime(2006, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2007 = datetime(2007, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2008 = datetime(2008, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2009 = datetime(2009, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2010 = datetime(2010, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2011 = datetime(2011, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2012 = datetime(2012, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
+
+time_2013 = datetime(2013, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
 
 time_2014 = datetime(2014, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
 
@@ -35,10 +53,15 @@ time_2019 = datetime(2019, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
 
 time_2020 = datetime(2020, 12, 31, 00, 00, 00).strftime(format='%Y-%m-%d')
 
+
+
 #filter by time
 df_2002 = df1.where(df1.date <= time_2002)
+#df_2004 = df1.where(df1.date > time_2003).where(df1.date <= time_2004)
 
 data_title_count_2002 = df_2002.groupBy(['page_id', df.page_title]).count().withColumnRenamed("count", "number")
+
+#data_title_count_2004 = df_2004.groupBy(['page_id', df.page_title]).count().withColumnRenamed("count", "number")
 
 #sort by current number
 data_title_count_2002 = data_title_count_2002.sort(desc("number"))
@@ -50,11 +73,23 @@ print(data_title_count_2002.show())
 # future work : code other part and write as a function
 
 
-df_2015 = df1.where(df1.date > time_2014).where(df1.date <= time_2015)
-data_title_count_2015 = df_2015.groupBy(['page_id', df.page_title]).count().withColumnRenamed("count", "number")
-data_title_count_2015 = data_title_count_2015.sort(desc("number"))
-ans2015 = data_title_count_2015.head(10)
-print(ans2015)
+
+
+df_2010 = df1.where(df1.date > time_2009).where(df1.date <= time_2010)
+data_title_count_2010 = df_2010.groupBy(['page_id', df.page_title]).count().withColumnRenamed("count", "number")
+data_title_count_2010 = data_title_count_2010.sort(desc("number"))
+ans2010 = data_title_count_2010.filter(~ data_title_count_2010.page_title.like('%Wikipedia%'))
+ans2010 = data_title_count_2010.head(20)
+print(ans2010)
+print(data_title_count_2010.show())
+
+df_2020 = df1.where(df1.date > time_2019).where(df1.date <= time_2020)
+data_title_count_2020 = df_2020.groupBy(['page_id', df.page_title]).count().withColumnRenamed("count", "number")
+data_title_count_2020 = data_title_count_2020.sort(desc("number"))
+ans2020 = data_title_count_2020.filter(~ data_title_count_2020.page_title.like('%Wikipedia%'))
+ans2020 = data_title_count_2020.head(20)
+print(ans2020)
+print(data_title_count_2020.show())
 
 #user
 
@@ -62,4 +97,13 @@ df2 = df.select('page_id','page_title','contributor_ip','contributor_user_id','c
 df2_2020 = df2.where(df2.date > time_2019).where(df2.date <= time_2020)
 data_user_2020 = df2_2020.groupBy(['contributor_user_id','contributor_username','page_title']).count().withColumnRenamed("count", "number")
 data_user_2020 = data_user_2020.sort(desc("number"))
+data_user_2020 = data_user_2020.filter(~ data_user_2020.page_title.like('%Wikipedia%'))
+
+
 print(data_user_2020.show())
+
+
+
+
+filter((df0.page_title.contains("Wikipedia:"))).filter((df0.page_title.contains("List of:"))).filter((df0.page_title.contains("User:"))).filter((df0.page_title.contains("Template:"))).filter((df0.page_title.contains("Template talk:"))).filter((df0.page_title.contains("Wikipedia talk:"))).filter((df0.page_title.contains("Portal:"))).filter((df0.page_title.contains("User talk:"))).filter((df0.page_title.contains("Talk:"))).filter((df0.page_title.contains("Category:")))
+
