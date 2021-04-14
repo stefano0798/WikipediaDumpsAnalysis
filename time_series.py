@@ -55,20 +55,3 @@ print(series_2010_2019.count())
 
 series_2010_2019.write.format('csv').mode("overwrite").option("header","true").save('/user/s2475650/series_2010_2019_finalfile.csv')
 df3.write.format('csv').mode("overwrite").option("header","true").save('/user/s2475650/series_2010_2019_finalfile_top20.csv')
-
-
-
-#Transfer files from computer to cluster (usingbash)
-#scp -r  /c/Users/Sarah/Desktop/MBD_project/time_series_grouped_day.py s2475650@ctit011.ewi.utwente.nl:/home/s2475650
-
-#Transfer from HDFS to cluster
-#hadoop fs -copyToLocal /user/s2475650/series_2010_2019_finalfile.csv /home/s2475650
-#hadoop fs -copyToLocal /user/s2475650/series_2010_2019_finalfile_top20.csv /home/s2475650
-
-#(Use on Bash) Trnsfer from cluster to local pc
-#scp -r  s2475650@ctit011.ewi.utwente.nl:/home/s2475650/series_2010_2019_finalfile.csv /c/Users/Sarah/Desktop/MBD_project
-#scp -r  s2475650@ctit011.ewi.utwente.nl:/home/s2475650/series_2010_2019_finalfile_top20.csv /c/Users/Sarah/Desktop/MBD_project
-
-#execute Spark
-#time spark-submit avg_textsize_user.py 2> /dev/null
-#time spark-submit --master yarn --deploy-mode cluster --conf spark.dynamicAllocation.maxExecutors=60 time_series_grouped_day.py
