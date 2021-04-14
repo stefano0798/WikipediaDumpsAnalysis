@@ -1,6 +1,3 @@
-# scp project.py s2640171@ctit012.ewi.utwente.nl:/home/s2640171/project/project.py
-# time spark-submit --master yarn --deploy-mode cluster --conf spark.dynamicAllocation.maxExecutors=10 project.py
-
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
@@ -17,7 +14,6 @@ df = spark.read.csv("/user/s2575760/project/data/enwiki-202012010-pages-meta-his
 
 
 data = df.select(df.page_id, df.rev_id, df.timestamp)
-
 
 # data = data.groupBy(data.page_id)
 # data = data.count()
