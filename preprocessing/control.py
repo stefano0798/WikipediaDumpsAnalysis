@@ -14,15 +14,15 @@ from preprocessing import strip_text_and_extract_fields_pagelevel
 # 5. save as csv file
 
 DOWNLOAD_URL_LIST_FILE = '/home/s2575760/project/wiki_bigdata/resources/wikidumps_source_download_list.txt'
-DOWNLOAD_FILES_LOCATION = '/home/s2575760/project/wiki_dump_files/full_page_history_dumps'
+DOWNLOAD_FILES_LOCATION = '/home/s2575760/project/wiki_dump_files/full_page_history_dumps/post500'
 FILES_UNCOMPRESS_LOCATION = '/home/s2575760/project/wiki_dump_files/preproc_inter/unzipped'
-FILES_SPLIT_LOCATION = '/home/s2575760/project/wiki_dump_files/preproc_inter/split'
-FILES_RMTEXT_LOCATION = '/home/s2575760/project/wiki_dump_files/preproc_inter/rmtext'
+FILES_SPLIT_LOCATION = '/home/s2575760/project/wiki_dump_files/preproc_inter/split' # NOT USED
+FILES_RMTEXT_LOCATION = '/home/s2575760/project/wiki_dump_files/preproc_inter/rmtext' # NOT USED
 FILES_CSV_LOCATION = '/home/s2575760/project/wiki_preprocessed'
 
+DOWNLOAD_FILES_HDFS_LOCATION = '/user/s2575760/project/data/enwiki_compressed'
 PREPROCESSED_FILES_HDFS_LOCATION = '/user/s2575760/project/data/enwiki-202012010-pages-meta-history'
 APPLICATION_LOGS_LOCATION = '/home/s2575760/project/logs/'
-
 
 def unzip_file(file_path, dest_dir):
     file_dir = os.path.dirname(file_path)
@@ -91,6 +91,8 @@ if __name__ == '__main__':
         logging.info(str(get_elapsed_time(start_time)) + 's - init transform to df ' + filename)
         rev_df = strip_text_and_extract_fields_pagelevel.strip_text_get_df(os.path.join(FILES_UNCOMPRESS_LOCATION, filename))
         logging.info(str(get_elapsed_time(start_time)) + 's - completed transform to df ' + filename)
-        # delete_unzipped_file(filename)
+
         strip_text_and_extract_fields_pagelevel.revisions_df_to_csv(rev_df, os.path.join(FILES_CSV_LOCATION, filename + "_d_wikifields.csv"))
         logging.info(str(get_elapsed_time(start_time)) + 's - completed wiki_fields_csv ' + filename)
+        delete_unzipped_file(filename)
+        logging.info(str(get_elapsed_time(start_time)) + 's - deleted uncompressed dump file' + filename)
