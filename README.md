@@ -1,14 +1,9 @@
-# mbd_project
+# Managing Big Data project
 
-page_id => page_name
-- edit_per_day (0; +inf)
-This number shows how many reviews one page has, in average, per day.
-It is the number of reviews divided by the number of days passed since the first review of that page.
+Code for the preprocessing operations can be found in the preprocessing module. The code starts at control.py and this orchestrates the different operations for uncompressing, parsing XMl data and converting to csv files.
 
-- recent_reviews [0, 1]
-This is a percentage.
-It is the number of "new" reviews divided by the total number of reviews.
+The spark code for the analysis can be found in the following files:
 
-- score [0, 3]
-The score of the page
-We define the score to be the average score of all reviews for a specified page. If a page has a score close to 3, it means that there are several reviews made a short time ago.
+| Question | File |
+| -- | -- |
+| Wikipedians | wikipedians_analysis.py |
